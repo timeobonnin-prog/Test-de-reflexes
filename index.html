@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- ========================================= -->
+    <!-- 1. TITRE ET META-DESCRIPTION (SEO)       -->
+    <!-- ========================================= -->
+    <title>Test de Réflexes ⚡ Mesure ton temps de réaction en ligne gratuit</title>
+    <meta name="description" content="Test de réflexes gratuit sans inscription. Mesure ton temps de réaction en millisecondes. Compare ta rapidité à la moyenne (250 ms) et défie tes amis !">
+    <link rel="canonical" href="https://test-de-reflexes.js.org/">
+    
+    <!-- ========================================= -->
+    <!-- 2. BALISES OPEN GRAPH (Facebook, LinkedIn) -->
+    <!-- ========================================= -->
+    <meta property="og:title" content="Test de Réflexes ⚡ Gratuit - Mesure ton temps de réaction">
+    <meta property="og:description" content="Teste tes réflexes instantanément. Clique quand l'écran devient vert et découvre si tu as des réflexes de chat ou de paresseux !">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://test-de-reflexes.js.org/">
+    <meta property="og:image" content="https://test-de-reflexes.js.org/preview.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    
+    <!-- ========================================= -->
+    <!-- 3. BALISES TWITTER CARD (Partage sur X)   -->
+    <!-- ========================================= -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Test de Réflexes ⚡ Gratuit - Mesure ton temps de réaction">
+    <meta name="twitter:description" content="Teste tes réflexes instantanément. Clique quand l'écran devient vert !">
+    <meta name="twitter:image" content="https://test-de-reflexes.js.org/preview.jpg">
+    
+    <!-- ========================================= -->
+    <!-- 4. DONNÉES STRUCTURÉES JSON-LD (Schema)   -->
+    <!-- ========================================= -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Test de Réflexes",
+      "description": "Test de réflexes gratuit en ligne pour mesurer votre temps de réaction en millisecondes.",
+      "url": "https://test-de-reflexes.js.org/",
+      "applicationCategory": "Game",
+      "operatingSystem": "All",
+      "browserRequirements": "JavaScript activé",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "EUR"
+      }
+    }
+    </script>
+    
+    <style>
+        /* ========================================= */
+        /* STYLES MODERNES & RESPONSIVE              */
+        /* ========================================= */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            background: #0f172a;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+        }
+        .container {
+            background: #1e293b;
+            padding: 40px 30px;
+            border-radius: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8);
+            max-width: 700px;
+            width: 100%;
+            text-align: center;
+            border: 1px solid #334155;
+        }
+        h1 {
+            color: #f8fafc;
+            font-weight: 700;
+            font-size: 2.2rem;
+            margin-bottom: 5px;
+        }
+        h1 span { color: #facc15; }
+        .subtitle {
+            color: #94a3b8;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+        .latency-badge {
+            display: inline-block;
+            background: #334155;
+            color: #94a3b8;
+            font-size: 0.7rem;
+            padding: 2px 12px;
+            border-radius: 20px;
+            margin-bottom: 15px;
+            border: 1px solid #475569;
+        }
+        
+        /* === ZONE DE JEU === */
+        #gameArea {
+            background: #334155;
+            border-radius: 24px;
+            padding: 40px 20px;
+            margin-bottom: 30px;
+            cursor: pointer;
+            transition: background-color 0.15s ease, transform 0.1s ease;
+            border: 2px solid #475569;
+            min-height: 220px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        #gameArea:active { transform: scale(0.98); }
+        #gameArea.waiting { background: #334155; border-color: #475569; }
+        #gameArea.ready { background: #22c55e; border-color: #16a34a; }
+        #gameArea.too-early { background: #ef4444; border-color: #dc2626; }
+        #gameArea.result { background: #1e293b; border-color: #facc15; }
+        
+        #statusText {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #f8fafc;
+            transition: all 0.2s ease;
+            line-height: 1.4;
+        }
+        #gameArea.result #statusText { color: #facc15; font-size: 3rem; font-weight: 800; }
+        #gameArea.ready #statusText { color: #052e16; font-weight: 700; }
+        #gameArea.too-early #statusText { color: #7f1d1d; font-weight: 700; }
+        
+        #statusSmall {
+            font-size: 1rem;
+            color: #cbd5e1;
+            margin-top: 10px;
+            font-weight: 400;
+        }
+        #gameArea.ready #statusSmall { color: #052e16; font-weight: 600; }
+        #gameArea.too-early #statusSmall { color: #7f1d1d; font-weight: 600; }
+
+        /* === STATS === */
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin: 20px 0 25px 0;
+        }
+        .stat-box {
+            background: #0f172a;
+            padding: 12px 10px;
+            border-radius: 16px;
+            flex: 1;
+            border: 1px solid #334155;
+        }
+        .stat-box .label {
+            color: #64748b;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .stat-box .value {
+            color: #f8fafc;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+        .stat-box .value.best { color: #facc15; }
+
+        /* === HISTORIQUE === */
+        .history-title {
+            color: #64748b;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            text-align: left;
+        }
+        #historyList {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+            min-height: 30px;
+            margin-bottom: 10px;
+        }
+        .history-badge {
+            background: #334155;
+            padding: 6px 14px;
+            border-radius: 20px;
+            color: #e2e8f0;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border: 1px solid #475569;
+        }
+
+        /* === BOUTONS === */
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #334155;
+            color: #f8fafc;
+            border: 1px solid #475569;
+            flex: 1;
+            min-width: 120px;
+        }
+        .btn:hover { background: #475569; transform: translateY(-2px); }
+        .btn-primary { background: #facc15; color: #0f172a; border-color: #facc15; font-weight: 700; }
+        .btn-primary:hover { background: #fde047; border-color: #fde047; }
+
+        /* === SECTION FAQ === */
+        .faq-section {
+            margin-top: 40px;
+            padding: 25px 20px;
+            background: #0f172a;
+            border-radius: 20px;
+            border: 1px solid #1e293b;
+            text-align: left;
+        }
+        .faq-section h2 {
+            color: #f8fafc;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .faq-item {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #1e293b;
+            padding-bottom: 15px;
+        }
+        .faq-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .faq-item h3 {
+            color: #facc15;
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        .faq-item p {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        .faq-item p strong { color: #e2e8f0; }
+
+        @media (max-width: 480px) {
+            .container { padding: 25px 15px; }
+            h1 { font-size: 1.8rem; }
+            #statusText { font-size: 1.4rem; }
+            #gameArea.result #statusText { font-size: 2.2rem; }
+            .stats { flex-direction: row; flex-wrap: wrap; }
+            .stat-box { min-width: 80px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <h1>⚡ Test de <span>Réflexes</span></h1>
+    <p class="subtitle">Clique quand l'écran devient vert pour mesurer ta rapidité ⬇️</p>
+    <div class="latency-badge">🖱️ Latence matérielle compensée (-50 ms)</div>
+
+    <!-- ZONE DE JEU -->
+    <div id="gameArea" class="waiting">
+        <div id="statusText">Attends le vert...</div>
+        <div id="statusSmall">Ne clique pas trop tôt !</div>
+    </div>
+
+    <!-- STATISTIQUES -->
+    <div class="stats">
+        <div class="stat-box"><div class="label">Dernier score</div><div class="value" id="lastScore">-</div></div>
+        <div class="stat-box"><div class="label">Meilleur</div><div class="value best" id="bestScore">-</div></div>
+        <div class="stat-box"><div class="label">Essais</div><div class="value" id="attemptCount">0</div></div>
+    </div>
+
+    <!-- HISTORIQUE -->
+    <div class="history-title">📋 Historique des 5 derniers scores</div>
+    <div id="historyList"><span style="color:#64748b; font-size:0.9rem;">Aucun score pour l'instant</span></div>
+
+    <!-- BOUTONS -->
+    <div class="actions">
+        <button class="btn btn-primary" id="resetBtn">🔄 Recommencer</button>
+        <button class="btn" id="shareBtn">📢 Partager mon score</button>
+    </div>
+
+    <!-- SECTION FAQ -->
+    <div class="faq-section">
+        <h2>❓ Questions fréquentes sur les réflexes</h2>
+        
+        <div class="faq-item">
+            <h3>Quel est le temps de réaction moyen d'un humain ?</h3>
+            <p>Le <strong>temps de réaction moyen</strong> d'un être humain est d'environ <strong>250 millisecondes</strong>. Ce chiffre varie selon l'âge, la fatigue, et la concentration. Ce <strong>test de réflexes</strong> permet de mesurer précisément ta <strong>vitesse de réaction visuelle</strong>.</p>
+        </div>
+
+        <div class="faq-item">
+            <h3>Comment améliorer ses réflexes ?</h3>
+            <p>Pour <strong>améliorer ses réflexes</strong>, il faut pratiquer régulièrement des <strong>jeux de réaction</strong> et des <strong>exercices cognitifs</strong>. Un bon sommeil, une alimentation équilibrée et des <strong>entraînements réflexes</strong> quotidiens (comme ce jeu) augmentent la <strong>rapidité de traitement cérébral</strong>.</p>
+        </div>
+
+        <div class="faq-item">
+            <h3>Quel est le record du monde de temps de réaction ?</h3>
+            <p>Le <strong>record du monde</strong> officieux du <strong>meilleur temps de réaction</strong> est d'environ <strong>100 à 120 millisecondes</strong>, atteint par des athlètes de haut niveau (sprinteurs et joueurs de jeux vidéo). Ce <strong>défi réflexes</strong> te permet de te comparer à ces <strong>réflexes de pro</strong>.</p>
+        </div>
+
+        <div class="faq-item">
+            <h3>Ce test de réflexes est-il précis ?</h3>
+            <p>Ce <strong>test de réaction</strong> utilise la méthode standard de mesure du <strong>réflexe visuel</strong>. La précision dépend de la fluidité de ton navigateur et de ton écran. Il est idéal pour un <strong>entraînement cognitif</strong> et une <strong>évaluation réflexe</strong> en ligne.</p>
+        </div>
+        
+        <div class="faq-item">
+            <h3>Pourquoi mes réflexes sont-ils lents aujourd'hui ?</h3>
+            <p>La <strong>vitesse de réaction</strong> peut être affectée par le stress, le manque de sommeil ou la consommation de substances. C'est un <strong>indicateur de performance cognitive</strong> qui varie. Refais le <strong>test de réflexes gratuit</strong> plusieurs jours pour voir ta <strong>moyenne réflexe</strong> évoluer.</p>
+        </div>
+    </div>
+
+</div>
+
+<!-- ========================================= -->
+<!-- JAVASCRIPT COMPLET (avec correction -50ms)-->
+<!-- ========================================= -->
+<script>
+    // --- Éléments DOM ---
+    const game = document.getElementById('gameArea');
+    const statusText = document.getElementById('statusText');
+    const statusSmall = document.getElementById('statusSmall');
+    const lastScoreEl = document.getElementById('lastScore');
+    const bestScoreEl = document.getElementById('bestScore');
+    const attemptCountEl = document.getElementById('attemptCount');
+    const historyList = document.getElementById('historyList');
+    const resetBtn = document.getElementById('resetBtn');
+    const shareBtn = document.getElementById('shareBtn');
+
+    // --- État du jeu ---
+    let state = 'waiting';
+    let timerId = null;
+    let startTime = 0;
+    let isWaitingForGreen = false;
+
+    // --- Données localStorage ---
+    let scores = [];
+    let bestScore = Infinity;
+
+    // --- Chargement des données ---
+    function loadData() {
+        try {
+            const stored = localStorage.getItem('reflexData');
+            if (stored) {
+                const data = JSON.parse(stored);
+                scores = data.scores || [];
+                bestScore = data.bestScore || Infinity;
+                if (scores.length > 50) scores = scores.slice(-50);
+            }
+        } catch(e) {}
+        if (bestScore === Infinity) bestScore = null;
+    }
+
+    function saveData() {
+        try {
+            localStorage.setItem('reflexData', JSON.stringify({ scores, bestScore }));
+        } catch(e) {}
+    }
+
+    // --- Mise à jour UI ---
+    function updateUI() {
+        lastScoreEl.textContent = scores.length > 0 ? scores[scores.length-1] + ' ms' : '-';
+        bestScoreEl.textContent = (bestScore && bestScore !== Infinity) ? bestScore + ' ms 🏆' : '-';
+        attemptCountEl.textContent = scores.length;
+
+        historyList.innerHTML = '';
+        if (scores.length === 0) {
+            historyList.innerHTML = '<span style="color:#64748b; font-size:0.9rem;">Aucun score pour l\'instant</span>';
+        } else {
+            const recent = scores.slice(-5).reverse();
+            recent.forEach(score => {
+                const badge = document.createElement('span');
+                badge.className = 'history-badge';
+                badge.textContent = score + ' ms';
+                historyList.appendChild(badge);
+            });
+        }
+    }
+
+    // --- Lancer une nouvelle manche ---
+    function startRound() {
+        clearTimeout(timerId);
+        state = 'waiting';
+        game.className = 'waiting';
+        statusText.textContent = 'Attends le vert...';
+        statusSmall.textContent = 'Prépare-toi...';
+        isWaitingForGreen = false;
+
+        const delay = 1500 + Math.random() * 4000;
+        timerId = setTimeout(() => {
+            state = 'ready';
+            game.className = 'ready';
+            statusText.textContent = '🟢 CLIQUE !';
+            statusSmall.textContent = 'Vite, appuie !';
+            startTime = performance.now();
+            isWaitingForGreen = true;
+        }, delay);
+    }
+
+    function resetGame() {
+        clearTimeout(timerId);
+        startRound();
+    }
+
+    // --- Gestion des clics ---
+    game.addEventListener('click', function(e) {
+        if (e.target.closest('button')) return;
+
+        if (state === 'waiting') {
+            clearTimeout(timerId);
+            state = 'too-early';
+            game.className = 'too-early';
+            statusText.textContent = '❌ Trop tôt !';
+            statusSmall.textContent = 'Attends le vert !';
+            isWaitingForGreen = false;
+            timerId = setTimeout(() => startRound(), 1200);
+            return;
+        }
+
+        if (state === 'ready' && isWaitingForGreen) {
+            // --- CORRECTION -50ms ---
+            let rawTime = performance.now() - startTime;
+            let compensatedTime = rawTime - 50;
+            if (compensatedTime < 0) compensatedTime = 0;
+            const reactionTime = Math.round(compensatedTime);
+
+            scores.push(reactionTime);
+            if (bestScore === null || reactionTime < bestScore) bestScore = reactionTime;
+            saveData();
+
+            state = 'result';
+            game.className = 'result';
+            statusText.textContent = reactionTime + ' ms';
+            
+            if (reactionTime <= 150) statusSmall.textContent = '⚡ Réflexes de fou ! (compensé)';
+            else if (reactionTime <= 250) statusSmall.textContent = '👍 Bon réflexe ! (compensé)';
+            else statusSmall.textContent = '🐢 Un peu lent... (compensé)';
+            
+            isWaitingForGreen = false;
+            updateUI();
+
+            timerId = setTimeout(() => startRound(), 2500);
+            return;
+        }
+    });
+
+    // --- Boutons ---
+    resetBtn.addEventListener('click', (e) => { e.stopPropagation(); resetGame(); });
+
+    shareBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        let msg = "⚡ Test de réflexes : ";
+        if (bestScore && bestScore !== Infinity) msg += `j'ai fait ${bestScore} ms (compensé -50ms) ! Et toi ?`;
+        else msg += "Mesure ton temps de réaction !";
+        const url = window.location.href;
+        const fullText = `${msg} 👉 ${url}`;
+
+        if (navigator.share) {
+            navigator.share({ title: 'Test de Réflexes', text: fullText, url: url }).catch(() => {});
+        } else {
+            navigator.clipboard.writeText(fullText).then(() => {
+                alert('📋 Lien et score copiés ! Partage-les avec tes potes.');
+            }).catch(() => {
+                prompt('Copie ce message :', fullText);
+            });
+        }
+    });
+
+    // --- INIT ---
+    loadData();
+    updateUI();
+    startRound();
+    window.addEventListener('beforeunload', () => clearTimeout(timerId));
+</script>
+
+</body>
+</html>
